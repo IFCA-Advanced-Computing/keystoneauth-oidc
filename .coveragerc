@@ -1,0 +1,6 @@
+[run]
+branch = True
+source = keystoneauth_oidc_authz_code
+
+[report]
+ignore_errors = True

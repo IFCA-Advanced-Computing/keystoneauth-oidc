@@ -1,5 +1,4 @@
 # OpenID Connect Authorization Code grant type support for OpenStack clients
-==========================================================================
 
 This is an authentication plugin for the OpenStack Clients (namely for the
 [keystoneauth1](https://github.com/openstack/keystoneauth) library) which
@@ -8,11 +7,11 @@ Connect.
 
 ## Installation
 
-Install it via pip::
+Install it via pip:
 
     pip install keystone-oidc-authz-code
 
-Or clone the repo and install it::
+Or clone the repo and install it:
 
     git clone https://github.com/indigo-dc/keystone-oidc-authz-code
     cd keystone-oidc-authz-code

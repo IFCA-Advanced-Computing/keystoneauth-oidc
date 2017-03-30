@@ -1,5 +1,11 @@
 # OpenID Connect Authorization Code grant type support for OpenStack clients
 
+[![GitHub issues](https://img.shields.io/github/issues/indigo-dc/keystoneauth-oidc-authz-code.svg)](https://github.com/indigo-dc/keystoneauth-oidc-authz-code/issues)
+[![Travis status](https://img.shields.io/travis/indigo-dc/keystoneauth-oidc-authz-code.svg)](https://travis-ci.org/indigo-dc/keystoneauth-oidc-authz-code)
+[![PyPI version](https://img.shields.io/pypi/v/keystoneauth-oidc-authz-code.svg)](https://pypi.python.org/pypi/keystoneauth-oidc-authz-code/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/keystoneauth-oidc-authz-code.svg)](https://pypi.python.org/pypi/keystoneauth-oidc-authz-code/)
+[![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://raw.githubusercontent.com/indigo-dc/keystoneauth-oidc-authz-code/master/LICENSE)
+
 This is an authentication plugin for the OpenStack Clients (namely for the
 [keystoneauth1](https://github.com/openstack/keystoneauth) library) which
 provides client support for using the Authorization Code grant type of OpenID

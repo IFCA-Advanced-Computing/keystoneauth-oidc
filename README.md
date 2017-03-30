@@ -9,12 +9,12 @@ Connect.
 
 Install it via pip:
 
-    pip install keystone-oidc-authz-code
+    pip install keystoneauth-oidc-authz-code
 
 Or clone the repo and install it:
 
-    git clone https://github.com/indigo-dc/keystone-oidc-authz-code
-    cd keystone-oidc-authz-code
+    git clone https://github.com/indigo-dc/keystoneauth-oidc-authz-code
+    cd keystoneauth-oidc-authz-code
     pip install .
 
 ## Usage

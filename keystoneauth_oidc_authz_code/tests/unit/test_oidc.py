@@ -15,9 +15,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import socket
+import uuid
+
 from keystoneauth1.tests.unit.identity import test_identity_v3_oidc
 from keystoneauth1.tests.unit import oidc_fixtures
 from keystoneauth1.tests.unit import utils
+import mock
 from six.moves import urllib
 
 from keystoneauth_oidc_authz_code import exceptions
@@ -93,3 +97,67 @@ class OIDCAuthorizationGrantTests(test_identity_v3_oidc.BaseOIDCTests,
         self.assertEqual('POST', last_req.method)
         encoded_payload = urllib.parse.urlencode(payload)
         self.assertEqual(encoded_payload, last_req.body)
+
+    @mock.patch.object(oidc.OidcAuthorizationCode, "_get_authorization_code")
+    def test_get_payload(self, mock_get_auth_code):
+        code = uuid.uuid4().hex
+        mock_get_auth_code.return_value = code
+        payload = {'redirect_uri': self.plugin.redirect_uri, 'code': code,
+                   'scope': self.plugin.scope}
+        self.assertDictEqual(payload,
+                             self.plugin.get_payload(self.session))
+
+    @mock.patch("webbrowser.open")
+    @mock.patch.object(oidc.OidcAuthorizationCode, "_wait_for_code")
+    def test__get_authorization_code(self,
+                                     mock_wait_for_code,
+                                     mock_webbrowser):
+        code = uuid.uuid4().hex
+        mock_wait_for_code.return_value = code
+        payload = {"client_id": self.CLIENT_ID,
+                   "response_type": "code",
+                   "scope": self.plugin.scope,
+                   "redirect_uri": self.plugin.redirect_uri}
+
+        url = "%s?%s" % (self.AUTHORIZATION_ENDPOINT,
+                         urllib.parse.urlencode(payload))
+        self.assertEqual(code,
+                         self.plugin._get_authorization_code(self.session))
+        mock_webbrowser.assert_called_with(url, new=1, autoraise=True)
+
+    @mock.patch("keystoneauth_oidc_authz_code.plugin._ClientCallbackServer")
+    def test_wait_for_code_socket_error(self, mock_callback):
+        mock_callback.side_effect = socket.error
+        self.assertRaises(socket.error,
+                          self.plugin._wait_for_code)
+        address = (self.plugin.redirect_host, self.plugin.redirect_port)
+        mock_callback.assert_called_with(address, oidc._ClientCallbackHandler)
+
+    @mock.patch("keystoneauth_oidc_authz_code.plugin._ClientCallbackServer")
+    def test_wait_for_code_error(self, mock_callback):
+        m = mock.MagicMock()
+        mock_callback.return_value = m
+        m.handle_request.return_value = None
+        m.code = None
+
+        self.assertRaises(exceptions.MissingOidcAuthorizationCode,
+                          self.plugin._wait_for_code)
+
+        address = (self.plugin.redirect_host, self.plugin.redirect_port)
+        mock_callback.assert_called_with(address, oidc._ClientCallbackHandler)
+        m.handle_request.assert_called()
+
+    @mock.patch("keystoneauth_oidc_authz_code.plugin._ClientCallbackServer")
+    def test_wait_for_code(self, mock_callback):
+        m = mock.MagicMock()
+        mock_callback.return_value = m
+        m.handle_request.return_value = None
+        code = uuid.uuid4().hex
+        m.code = code
+
+        self.assertEqual(code,
+                         self.plugin._wait_for_code())
+
+        address = (self.plugin.redirect_host, self.plugin.redirect_port)
+        mock_callback.assert_called_with(address, oidc._ClientCallbackHandler)
+        m.handle_request.assert_called()

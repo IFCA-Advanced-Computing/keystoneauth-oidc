@@ -63,26 +63,26 @@ provider.
 
 - Unscoped token:
 
-    openstack --os-auth-url https://keystone.example.org:5000/v3 \
-        --os-auth-type v3oidccode \
-        --os-identity-provider <identity-provider> \
-        --os-protocol <protocol> \
-        --os-identity-api-version 3 \
-        --os-discovery-endpoint https://idp.example.org/.well-known/openid-configuration \
-        --os-openid-scope "openid profile email" \
-        token issue
+        openstack --os-auth-url https://keystone.example.org:5000/v3 \
+            --os-auth-type v3oidccode \
+            --os-identity-provider <identity-provider> \
+            --os-protocol <protocol> \
+            --os-identity-api-version 3 \
+            --os-discovery-endpoint https://idp.example.org/.well-known/openid-configuration \
+            --os-openid-scope "openid profile email" \
+            token issue
 
 - Scoped token:
 
-    openstack --os-auth-url https://keystone.example.org:5000/v3 \
-        --os-auth-type v3oidc \
-        --os-identity-provider <identity-provider> \
-        --os-protocol <protocol> \
-        --os-project-name <project> \
-        --os-project-domain-id <project-domain> \
-        --os-identity-api-version 3 \
-        --os-openid-scope "openid profile email" \
-        token issue
+        openstack --os-auth-url https://keystone.example.org:5000/v3 \
+            --os-auth-type v3oidc \
+            --os-identity-provider <identity-provider> \
+            --os-protocol <protocol> \
+            --os-project-name <project> \
+            --os-project-domain-id <project-domain> \
+            --os-identity-api-version 3 \
+            --os-openid-scope "openid profile email" \
+            token issue
 
 
 ### `v3oidccode` plugin (old method)
@@ -95,32 +95,32 @@ endpoint with `--os-discovery-endpoint`. The `<identity-provider>` and
 
 - Unscoped token:
 
-    openstack --os-auth-url https://keystone.example.org:5000/v3 \
-        --os-auth-type v3oidccode \
-        --os-identity-provider <identity-provider> \
-        --os-protocol <protocol> \
-        --os-identity-api-version 3 \
-        --os-client-id <OpenID Connect client ID> \
-        --os-client-secret <OpenID Connect client secret> \
-        --os-discovery-endpoint https://idp.example.org/.well-known/openid-configuration \
-        --os-openid-scope "openid profile email" \
-        token issue
+        openstack --os-auth-url https://keystone.example.org:5000/v3 \
+            --os-auth-type v3oidccode \
+            --os-identity-provider <identity-provider> \
+            --os-protocol <protocol> \
+            --os-identity-api-version 3 \
+            --os-client-id <OpenID Connect client ID> \
+            --os-client-secret <OpenID Connect client secret> \
+            --os-discovery-endpoint https://idp.example.org/.well-known/openid-configuration \
+            --os-openid-scope "openid profile email" \
+            token issue
 
 - Scoped token:
 
-    openstack --os-auth-url https://keystone.example.org:5000/v3 \
-        --os-auth-type v3oidccode \
-        --os-identity-provider <identity-provider> \
-        --os-protocol <protocol> \
-        --os-project-name <project> \
-        --os-project-domain-id <project-domain> \
-        --os-identity-api-version 3 \
-        --os-client-id <OpenID Connect client ID> \
-        --os-client-secret <OpenID Connect client secret> \
-        --os-discovery-endpoint https://idp.example.org/.well-known/openid-configuration \
-        --os-openid-scope "openid profile email" \
-        token issue
+        openstack --os-auth-url https://keystone.example.org:5000/v3 \
+            --os-auth-type v3oidccode \
+            --os-identity-provider <identity-provider> \
+            --os-protocol <protocol> \
+            --os-project-name <project> \
+            --os-project-domain-id <project-domain> \
+            --os-identity-api-version 3 \
+            --os-client-id <OpenID Connect client ID> \
+            --os-client-secret <OpenID Connect client secret> \
+            --os-discovery-endpoint https://idp.example.org/.well-known/openid-configuration \
+            --os-openid-scope "openid profile email" \
+            token issue
 
 ### API
 
-To be documented
+To be documented.

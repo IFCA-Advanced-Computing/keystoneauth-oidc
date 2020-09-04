@@ -1,12 +1,25 @@
 language: python
 
+matrix:
+  include:
+    - stage: Lint and Code Style
+      python: 3.8
+      env: TOXENV=pep8
+
+    - stage: Tests (Python 3.8)
+      python: 3.8
+      env: TOXENV=py38
+    - python: 3.8
+      env: TOXENV=cover
+
+    - stage: Tests (Python3.7)
+      python: 3.7
+      env: TOXENV=py37
+    - python: 3.7
+      env: TOXENV=cover
+
 install:
-        - pip install tox
+  - pip install tox
 
 script:
-        - tox
-
-env:
-        - TOXENV=py27
-        - TOXENV=py34
-        - TOXENV=pep8
+  - tox

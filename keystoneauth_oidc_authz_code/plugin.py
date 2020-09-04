@@ -80,10 +80,42 @@ class _ClientCallbackHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         parsed = urlparse.urlparse(self.path)
         query = urlparse.parse_qs(parsed.query)
         code = query.get("code", [None])[0]
+        state = query.get("state", [None])[0]
         self.server.code = code
+        self.server.state = state
 
     def log_message(self, format, *args):
         """Do not log messages to stdout."""
+
+
+def _wait_for_code(redirect_host, redirect_port):
+    """Spawn an HTTP server and wait for the auth code.
+
+    :param redirect_host: The hostname where the authorization request will
+                            be redirected. This normally is localhost. This
+                            indicates the hostname where the callback http
+                            server will listen.
+    :type redirect_host: string
+
+    :param redirect_port: The port where the authorization request will
+                            be redirected. This indicates the port where the
+                            callback http server will bind to.
+    :type redirect_port: int
+    """
+    server_address = (redirect_host, redirect_port)
+    try:
+        httpd = _ClientCallbackServer(server_address,
+                                      _ClientCallbackHandler)
+    except socket.error:
+        _logger.error("Cannot spawn the callback server on port "
+                      "%s, please specify a different port." %
+                      redirect_port)
+        raise
+    httpd.handle_request()
+    if httpd.code is not None:
+        return httpd.code, httpd.state
+    else:
+        raise exceptions.MissingOidcAuthorizationCode()
 
 
 class OidcAuthorizationCode(oidc._OidcBase):
@@ -153,22 +185,6 @@ class OidcAuthorizationCode(oidc._OidcBase):
             raise exceptions.OidcAuthorizationEndpointNotFound()
         return endpoint
 
-    def _wait_for_code(self):
-        server_address = (self.redirect_host, self.redirect_port)
-        try:
-            httpd = _ClientCallbackServer(server_address,
-                                          _ClientCallbackHandler)
-        except socket.error:
-            _logger.error("Cannot spawn the callback server on port "
-                          "%s, please specify a different port." %
-                          self.redirect_port)
-            raise
-        httpd.handle_request()
-        if httpd.code is not None:
-            return httpd.code
-        else:
-            raise exceptions.MissingOidcAuthorizationCode()
-
     def _get_authorization_code(self, session):
         """Get an authorization code from the authorization endpoint.
 
@@ -185,7 +201,7 @@ class OidcAuthorizationCode(oidc._OidcBase):
                          urllib.parse.urlencode(payload))
 
         webbrowser.open(url, new=1, autoraise=True)
-        code = self._wait_for_code()
+        code, _ = _wait_for_code(self.redirect_host, self.redirect_port)
         return code
 
     def get_payload(self, session):

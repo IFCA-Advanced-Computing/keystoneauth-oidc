@@ -108,12 +108,13 @@ class OIDCAuthorizationGrantTests(test_identity_v3_oidc.BaseOIDCTests,
                              self.plugin.get_payload(self.session))
 
     @mock.patch("webbrowser.open")
-    @mock.patch.object(oidc.OidcAuthorizationCode, "_wait_for_code")
+    @mock.patch.object(oidc, "_wait_for_code")
     def test__get_authorization_code(self,
                                      mock_wait_for_code,
                                      mock_webbrowser):
         code = uuid.uuid4().hex
-        mock_wait_for_code.return_value = code
+        state = uuid.uuid4().hex
+        mock_wait_for_code.return_value = (code, state)
         payload = {"client_id": self.CLIENT_ID,
                    "response_type": "code",
                    "scope": self.plugin.scope,
@@ -129,7 +130,8 @@ class OIDCAuthorizationGrantTests(test_identity_v3_oidc.BaseOIDCTests,
     def test_wait_for_code_socket_error(self, mock_callback):
         mock_callback.side_effect = socket.error
         self.assertRaises(socket.error,
-                          self.plugin._wait_for_code)
+                          oidc._wait_for_code,
+                          self.plugin.redirect_host, self.plugin.redirect_port)
         address = (self.plugin.redirect_host, self.plugin.redirect_port)
         mock_callback.assert_called_with(address, oidc._ClientCallbackHandler)
 
@@ -141,7 +143,8 @@ class OIDCAuthorizationGrantTests(test_identity_v3_oidc.BaseOIDCTests,
         m.code = None
 
         self.assertRaises(exceptions.MissingOidcAuthorizationCode,
-                          self.plugin._wait_for_code)
+                          oidc._wait_for_code,
+                          self.plugin.redirect_host, self.plugin.redirect_port)
 
         address = (self.plugin.redirect_host, self.plugin.redirect_port)
         mock_callback.assert_called_with(address, oidc._ClientCallbackHandler)
@@ -153,10 +156,13 @@ class OIDCAuthorizationGrantTests(test_identity_v3_oidc.BaseOIDCTests,
         mock_callback.return_value = m
         m.handle_request.return_value = None
         code = uuid.uuid4().hex
+        state = uuid.uuid4().hex
         m.code = code
+        m.state = state
 
-        self.assertEqual(code,
-                         self.plugin._wait_for_code())
+        self.assertEqual((code, state),
+                         oidc._wait_for_code(self.plugin.redirect_host,
+                                             self.plugin.redirect_port))
 
         address = (self.plugin.redirect_host, self.plugin.redirect_port)
         mock_callback.assert_called_with(address, oidc._ClientCallbackHandler)

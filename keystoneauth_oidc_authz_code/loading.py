@@ -59,3 +59,27 @@ class OpenIDConnectAuthorizationCode(v3._OpenIDConnectBase):
 
         return super(OpenIDConnectAuthorizationCode,
                      self).load_from_options(**kwargs)
+
+
+class OpenIDConnect(loading.BaseFederationLoader):
+
+    @property
+    def plugin_class(self):
+        return plugin.OpenIDConnect
+
+    def get_options(self):
+        options = super(OpenIDConnect, self).get_options()
+
+        options.extend([
+            loading.Opt('redirect-port',
+                        default=8080,
+                        type=int,
+                        help='Port where the callback server will be '
+                        'listening. By default this server will listen on '
+                        'localhost and port 8080 (therefore the redirect URL '
+                        'to be configured in the authentication server would '
+                        'is http://localhost:8080), but you can adjust the '
+                        'port here in case you cannot bind on that port.'),
+        ])
+
+        return options

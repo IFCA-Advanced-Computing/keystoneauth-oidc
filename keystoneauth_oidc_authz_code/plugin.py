@@ -19,6 +19,8 @@ import socket
 import webbrowser
 
 from keystoneauth1 import _utils as utils
+from keystoneauth1 import access
+from keystoneauth1.identity.v3 import federation
 from keystoneauth1.identity.v3 import oidc
 from positional import positional
 from six.moves import BaseHTTPServer
@@ -219,3 +221,92 @@ class OidcAuthorizationCode(oidc._OidcBase):
                    'scope': self.scope}
 
         return payload
+
+
+class OpenIDConnect(federation.FederationBaseAuth):
+    """Implementation for OpenID Connect authentication."""
+    @positional(3)
+    def __init__(self, auth_url, identity_provider, protocol,
+                 redirect_host="localhost", redirect_port=8080,
+                 **kwargs):
+        """The OpenID Connect plugin expects the following arguments.
+
+        :param redirect_host: The hostname where the authorization request will
+                              be redirected. This normally is localhost. This
+                              indicates the hostname where the callback http
+                              server will listen.
+        :type redirect_host: string
+
+        :param redirect_port: The port where the authorization request will
+                              be redirected. This indicates the port where the
+                              callback http server will bind to.
+        :type redirect_port: int
+        """
+        super(OpenIDConnect, self).__init__(
+            auth_url=auth_url,
+            identity_provider=identity_provider,
+            protocol=protocol,
+            **kwargs)
+        self.redirect_host = redirect_host
+        self.redirect_port = int(redirect_port)
+        self.redirect_uri = "http://%s:%s" % (self.redirect_host,
+                                              self.redirect_port)
+
+    def _get_keystone_token(self, session):
+
+        # We initiate the auth request to Keystone. We indicate the oscli=1
+        # query param so as to start and out-of-bound authentication.
+        auth_response = session.post(self.federated_token_url + "?oscli=1",
+                                     redirect=False,
+                                     authenticated=False)
+
+        # Keystone will return a 302 redirect. We need to point the user to
+        # that URL so that the auth request is authorized.
+        redirect_url = auth_response.headers["location"]
+
+        webbrowser.open(redirect_url, new=1, autoraise=True)
+        code, state = _wait_for_code(self.redirect_host, self.redirect_port)
+
+        # Now that we have the code and state, we can finish the token request
+        # by sending them back to the Keystone auth endpoing, finishing the
+        # out-of-bound authentication
+        params = {
+            "code": code,
+            "state": state,
+            "oscli": 1,
+        }
+        auth_response = session.get(self.federated_token_url,
+                                    params=params,
+                                    authenticated=False)
+
+        return auth_response
+
+    def get_unscoped_auth_ref(self, session):
+        """Authenticate with a Keystone server with OpenID Connect.
+
+        This plugin expects that the OpenID Connect Client is the Keystone
+        server, not the OpenStack or Keystone client. No OpenID credentials
+        need to be configured.
+
+        This plugin initiates an auth request to Keystone (to the federation
+        endpoint) with an special query parameter (oscli=1), indicating that
+        the OpenID Connect redirection should not be made to the Keystone
+        server configured URL, but to http://localhost:8080. This way we can
+        perform out-of-bound authentication as follows: When the Keystone
+        server returns the redirection, we intercept it and, instead of
+        following it, we open a web browser, so that the user can authorize the
+        request, spawning a web server on locahost:8080. After the user has
+        authorized the auth request, the web browser is redirected to
+        http://localhost:8080 where we can get the auth code, and send it back
+        to Keystone to complete the authentication.
+
+        :param session: a session object to send out HTTP requests.
+        :type session: keystoneauth1.session.Session
+
+        :returns: a token data representation
+        :rtype: :py:class:`keystoneauth1.access.AccessInfoV3`
+        """
+
+        response = self._get_keystone_token(session)
+
+        return access.create(resp=response)

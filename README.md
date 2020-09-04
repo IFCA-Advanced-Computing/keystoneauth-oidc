@@ -55,7 +55,7 @@ Or clone the repo and install it:
 
 ## Usage
 
-### `v3oidc` plugin (old method)
+### `v3oidc` plugin
 
 You have to specify the `v3oidc` in the `--os-auth-type`. The
 `<identity-provider>` and `<protocol>` must be provided by the OpenStack cloud

@@ -24,8 +24,8 @@ from keystoneauth1.tests.unit import oidc_fixtures
 from keystoneauth1.tests.unit import utils
 from six.moves import urllib
 
-from keystoneauth_oidc_authz_code import exceptions
-from keystoneauth_oidc_authz_code import plugin as oidc
+from keystoneauth_oidc import exceptions
+from keystoneauth_oidc import plugin as oidc
 
 
 class OIDCAuthorizationGrantTests(test_identity_v3_oidc.BaseOIDCTests,
@@ -126,7 +126,7 @@ class OIDCAuthorizationGrantTests(test_identity_v3_oidc.BaseOIDCTests,
                          self.plugin._get_authorization_code(self.session))
         mock_webbrowser.assert_called_with(url, new=1, autoraise=True)
 
-    @mock.patch("keystoneauth_oidc_authz_code.plugin._ClientCallbackServer")
+    @mock.patch("keystoneauth_oidc.plugin._ClientCallbackServer")
     def test_wait_for_code_socket_error(self, mock_callback):
         mock_callback.side_effect = socket.error
         self.assertRaises(socket.error,
@@ -135,7 +135,7 @@ class OIDCAuthorizationGrantTests(test_identity_v3_oidc.BaseOIDCTests,
         address = (self.plugin.redirect_host, self.plugin.redirect_port)
         mock_callback.assert_called_with(address, oidc._ClientCallbackHandler)
 
-    @mock.patch("keystoneauth_oidc_authz_code.plugin._ClientCallbackServer")
+    @mock.patch("keystoneauth_oidc.plugin._ClientCallbackServer")
     def test_wait_for_code_error(self, mock_callback):
         m = mock.MagicMock()
         mock_callback.return_value = m
@@ -150,7 +150,7 @@ class OIDCAuthorizationGrantTests(test_identity_v3_oidc.BaseOIDCTests,
         mock_callback.assert_called_with(address, oidc._ClientCallbackHandler)
         m.handle_request.assert_called()
 
-    @mock.patch("keystoneauth_oidc_authz_code.plugin._ClientCallbackServer")
+    @mock.patch("keystoneauth_oidc.plugin._ClientCallbackServer")
     def test_wait_for_code(self, mock_callback):
         m = mock.MagicMock()
         mock_callback.return_value = m

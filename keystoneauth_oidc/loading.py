@@ -19,7 +19,7 @@ from keystoneauth1 import exceptions
 from keystoneauth1 import loading
 from keystoneauth1.loading._plugins.identity import v3
 
-from keystoneauth_oidc_authz_code import plugin
+from keystoneauth_oidc import plugin
 
 
 class OpenIDConnectAuthorizationCode(v3._OpenIDConnectBase):

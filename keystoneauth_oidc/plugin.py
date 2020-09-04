@@ -27,7 +27,7 @@ from six.moves import BaseHTTPServer
 from six.moves import urllib
 from six.moves.urllib import parse as urlparse
 
-from keystoneauth_oidc_authz_code import exceptions
+from keystoneauth_oidc import exceptions
 
 _logger = utils.get_logger(__name__)
 

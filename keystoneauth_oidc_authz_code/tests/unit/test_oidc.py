@@ -16,12 +16,12 @@
 # under the License.
 
 import socket
+from unittest import mock
 import uuid
 
 from keystoneauth1.tests.unit.identity import test_identity_v3_oidc
 from keystoneauth1.tests.unit import oidc_fixtures
 from keystoneauth1.tests.unit import utils
-import mock
 from six.moves import urllib
 
 from keystoneauth_oidc_authz_code import exceptions

@@ -35,11 +35,14 @@ configured with the Apache HTTP server and the
 [Keystone Open ID Connect plugin](https://github.com/IFCA/keystone-oidc-auth-plugin).
 
 This plugin requires that you configure an OpenID Connect client in your OpenID
-Connect Provider and pass the client credentials to the plugin. The OpenStack
-CLI will handle the authentication with the OpenID Connect Provider, obtaining
-and access token, that will be exchanged with the Keystone server in order to
-obtain a Keystone token.
+Connect Provider and pass the client credentials to the plugin. For public clients,
+omit the client_secret and
+[Proof Key for Code Exchange (PKCE)](https://tools.ietf.org/html/rfc7636) will be added
+to the request.
 
+The OpenStack CLI will handle the authentication with the OpenID Connect
+Provider, obtaining and access token, that will be exchanged with the Keystone
+server in order to obtain a Keystone token.
 
 ## Installation
 
@@ -91,7 +94,8 @@ First of all, you need to create an OpenID Connect client in your OpenID Connect
 Then, you have to specify the `v3oidccode` in the `--os-auth-type` option and provide a
 valid autorization endpoint with `--os-authorization-endpoint` or a valid discovery
 endpoint with `--os-discovery-endpoint`. The `<identity-provider>` and
-`<protocol>` must be provided by the OpenStack cloud provider.
+`<protocol>` must be provided by the OpenStack cloud provider. For public clients that
+lack a client_secret, the `--os-client-secret` field can be omitted.
 
 - Unscoped token:
 
@@ -101,7 +105,7 @@ endpoint with `--os-discovery-endpoint`. The `<identity-provider>` and
             --os-protocol <protocol> \
             --os-identity-api-version 3 \
             --os-client-id <OpenID Connect client ID> \
-            --os-client-secret <OpenID Connect client secret> \
+            [--os-client-secret <OpenID Connect client secret> \]
             --os-discovery-endpoint https://idp.example.org/.well-known/openid-configuration \
             --os-openid-scope "openid profile email" \
             token issue
@@ -116,7 +120,7 @@ endpoint with `--os-discovery-endpoint`. The `<identity-provider>` and
             --os-project-domain-id <project-domain> \
             --os-identity-api-version 3 \
             --os-client-id <OpenID Connect client ID> \
-            --os-client-secret <OpenID Connect client secret> \
+            [--os-client-secret <OpenID Connect client secret> \]
             --os-discovery-endpoint https://idp.example.org/.well-known/openid-configuration \
             --os-openid-scope "openid profile email" \
             token issue

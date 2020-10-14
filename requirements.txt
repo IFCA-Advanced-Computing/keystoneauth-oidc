@@ -10,3 +10,5 @@ six>=1.10.0 # MIT
 positional>=1.1.1
 
 keystoneauth1>=2.10.0
+
+pkce>=1.0

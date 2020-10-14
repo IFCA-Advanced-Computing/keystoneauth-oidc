@@ -127,8 +127,8 @@ class OidcAuthorizationCode(oidc._OidcBase):
     grant_type = 'authorization_code'
 
     @positional(4)
-    def __init__(self, auth_url, identity_provider, protocol,
-                 client_id, client_secret,
+    def __init__(self, auth_url, identity_provider, protocol, client_id,
+                 client_secret=None,
                  access_token_endpoint=None,
                  authorization_endpoint=None,
                  discovery_endpoint=None,
@@ -162,7 +162,8 @@ class OidcAuthorizationCode(oidc._OidcBase):
         self.redirect_host = redirect_host
         self.redirect_port = int(redirect_port)
         self.redirect_uri = "http://%s:%s" % (self.redirect_host, self.redirect_port)
-        self.code_verifier, self.code_challenge = None
+        self.code_verifier = None
+        self.code_challenge = None
         if client_secret in ['', None]:
             self.code_verifier, self.code_challenge = pkce.generate_pkce_pair()
 
@@ -204,7 +205,8 @@ class OidcAuthorizationCode(oidc._OidcBase):
 
         if self.code_challenge is not None:
             payload.update({
-                'code_challenge': self.code_challenge
+                'code_challenge': self.code_challenge,
+                'code_challenge_method': 'S256'
             })
 
         url = "%s?%s" % (self._get_authorization_endpoint(session),

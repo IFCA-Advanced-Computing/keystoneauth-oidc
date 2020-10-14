@@ -17,6 +17,7 @@
 
 import socket
 import webbrowser
+import pkce
 
 from keystoneauth1 import _utils as utils
 from keystoneauth1 import access
@@ -160,8 +161,10 @@ class OidcAuthorizationCode(oidc._OidcBase):
         self.authorization_endpoint = authorization_endpoint
         self.redirect_host = redirect_host
         self.redirect_port = int(redirect_port)
-        self.redirect_uri = "http://%s:%s" % (self.redirect_host,
-                                              self.redirect_port)
+        self.redirect_uri = "http://%s:%s" % (self.redirect_host, self.redirect_port)
+        self.code_verifier, self.code_challenge = None
+        if client_secret in ['', None]:
+            self.code_verifier, self.code_challenge = pkce.generate_pkce_pair()
 
     def _get_authorization_endpoint(self, session):
         """Get the "authorization_endpoint" for the OpenID Connect flow.
@@ -199,12 +202,40 @@ class OidcAuthorizationCode(oidc._OidcBase):
                    "scope": self.scope,
                    "redirect_uri": self.redirect_uri}
 
+        if self.code_challenge is not None:
+            payload.update({
+                'code_challenge': self.code_challenge
+            })
+
         url = "%s?%s" % (self._get_authorization_endpoint(session),
                          urllib.parse.urlencode(payload))
 
         webbrowser.open(url, new=1, autoraise=True)
         code, _ = _wait_for_code(self.redirect_host, self.redirect_port)
         return code
+
+    def _get_access_token(self, session, payload):
+        """Exchange a variety of user supplied values for an access token.
+        :param session: a session object to send out HTTP requests.
+        :type session: keystoneauth1.session.Session
+        :param payload: a dict containing various OpenID Connect values, for
+                        example::
+                          {'grant_type': 'password', 'username': self.username,
+                           'password': self.password, 'scope': self.scope}
+        :type payload: dict
+        """
+
+        access_token_endpoint = self._get_access_token_endpoint(session)
+        if self.code_verifier is not None:
+            client_auth = None
+        else:
+            client_auth = (self.client_id, self.client_secret)
+        op_response = session.post(access_token_endpoint,
+                                    requests_auth=client_auth,
+                                    data=payload,
+                                    authenticated=False)
+        access_token = op_response.json()[self.access_token_type]
+        return access_token
 
     def get_payload(self, session):
         """Get an authorization grant for the "authorization_code" grant type.
@@ -219,6 +250,12 @@ class OidcAuthorizationCode(oidc._OidcBase):
 
         payload = {'redirect_uri': self.redirect_uri, 'code': code,
                    'scope': self.scope}
+
+        if self.code_verifier is not None:
+            payload.update({
+                'client_id': self.client_id,
+                'code_verifier': self.code_verifier
+            })
 
         return payload
 

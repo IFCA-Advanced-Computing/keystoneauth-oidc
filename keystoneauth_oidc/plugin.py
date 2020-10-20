@@ -15,9 +15,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import pkce
 import socket
 import webbrowser
-import pkce
 
 from keystoneauth1 import _utils as utils
 from keystoneauth1 import access

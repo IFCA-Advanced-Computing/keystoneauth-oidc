@@ -118,7 +118,8 @@ class OIDCAuthorizationGrantTests(test_identity_v3_oidc.BaseOIDCTests,
         payload = {"client_id": self.CLIENT_ID,
                    "response_type": "code",
                    "scope": self.plugin.scope,
-                   "redirect_uri": self.plugin.redirect_uri}
+                   "redirect_uri": self.plugin.redirect_uri,
+                   "state": self.plugin.state}
 
         url = "%s?%s" % (self.AUTHORIZATION_ENDPOINT,
                          urllib.parse.urlencode(payload))

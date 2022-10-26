@@ -18,6 +18,7 @@
 import pkce
 import socket
 import webbrowser
+import uuid
 
 from keystoneauth1 import _utils as utils
 from keystoneauth1 import access
@@ -164,6 +165,7 @@ class OidcAuthorizationCode(oidc._OidcBase):
         self.redirect_uri = "http://%s:%s" % (self.redirect_host, self.redirect_port)
         self.code_verifier = None
         self.code_challenge = None
+        self.state = uuid.uuid4().hex
         if client_secret in ['', None]:
             self.code_verifier, self.code_challenge = pkce.generate_pkce_pair()
 
@@ -201,7 +203,8 @@ class OidcAuthorizationCode(oidc._OidcBase):
         payload = {"client_id": self.client_id,
                    "response_type": "code",
                    "scope": self.scope,
-                   "redirect_uri": self.redirect_uri}
+                   "redirect_uri": self.redirect_uri,
+                   "state": self.state}
 
         if self.code_challenge is not None:
             payload.update({
